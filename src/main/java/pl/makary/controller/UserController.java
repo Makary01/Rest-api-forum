@@ -12,6 +12,7 @@ import pl.makary.entity.User;
 import pl.makary.exception.IncorrectPasswordException;
 import pl.makary.exception.UniqueValueException;
 import pl.makary.model.CreateUserRequest;
+import pl.makary.model.DeleteUserRequest;
 import pl.makary.model.EditUserRequest;
 import pl.makary.service.UserService;
 import pl.makary.util.CurrentUser;
@@ -78,4 +79,25 @@ public class UserController {
         return ResponseEntity.ok("edited current user");
     }
 
+    @DeleteMapping("")
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal CurrentUser currentUser,
+                                        @RequestBody @Valid DeleteUserRequest deleteUserRequest, BindingResult result){
+        if (result.hasErrors()) {
+            Map<String, String> errors= result.getFieldErrors().stream()
+                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+            return ResponseEntity
+                    .badRequest()
+                    .body(errors);
+        }
+
+        try {
+            userService.delete(currentUser.getUser(), deleteUserRequest);
+        } catch (IncorrectPasswordException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getError());
+        }
+
+        return ResponseEntity.ok("Deleted user");
+    }
 }

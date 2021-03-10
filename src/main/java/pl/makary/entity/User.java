@@ -1,12 +1,14 @@
 package pl.makary.entity;
 
 import lombok.Data;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Data
+@Where(clause = "enabled = 1")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

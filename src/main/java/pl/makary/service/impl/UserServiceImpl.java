@@ -7,6 +7,7 @@ import pl.makary.entity.User;
 import pl.makary.exception.IncorrectPasswordException;
 import pl.makary.exception.UniqueValueException;
 import pl.makary.model.CreateUserRequest;
+import pl.makary.model.DeleteUserRequest;
 import pl.makary.model.EditUserRequest;
 import pl.makary.repository.RoleRepository;
 import pl.makary.repository.UserRepository;
@@ -76,4 +77,16 @@ public class UserServiceImpl implements UserService {
 
 
     }
+
+    @Override
+    public void delete(User user, DeleteUserRequest deleteUserRequest) throws IncorrectPasswordException {
+        if(!passwordEncoder.matches(deleteUserRequest.getPassword(), user.getPassword())){
+            throw new IncorrectPasswordException();
+        }
+
+        user.setEnabled(0);
+        userRepository.save(user);
+    }
+
+
 }
