@@ -4,8 +4,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.makary.entity.Role;
 import pl.makary.entity.User;
+import pl.makary.exception.IncorrectPasswordException;
 import pl.makary.exception.UniqueValueException;
 import pl.makary.model.CreateUserRequest;
+import pl.makary.model.EditUserRequest;
 import pl.makary.repository.RoleRepository;
 import pl.makary.repository.UserRepository;
 import pl.makary.service.UserService;
@@ -18,6 +20,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
                            BCryptPasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
@@ -29,33 +32,48 @@ public class UserServiceImpl implements UserService {
     public User findByUserName(String username) {
         return userRepository.findByUsername(username);
     }
-    @Override
-    public void saveUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setEnabled(1);
-        Role userRole = roleRepository.findByName("ROLE_USER");
-        user.setRoles(new HashSet<Role>(Arrays.asList(userRole)));
-        userRepository.save(user);
-    }
 
     @Override
-    public void saveNewUser(CreateUserRequest cur) throws UniqueValueException {
+    public void saveNewUser(CreateUserRequest createUserRequest) throws UniqueValueException {
         User userToSave = new User();
         userToSave.setId(null);
-        userToSave.setUsername(cur.getUsername());
-        userToSave.setPassword(passwordEncoder.encode(cur.getPassword()));
-        userToSave.setEmail(cur.getEmail());
+        userToSave.setUsername(createUserRequest.getUsername());
+        userToSave.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
+        userToSave.setEmail(createUserRequest.getEmail());
         userToSave.setEnabled(1);
         Role userRole = roleRepository.findByName("ROLE_USER");
         userToSave.setRoles(new HashSet<>(Arrays.asList(userRole)));
 
-        if(userRepository.existsByUsername(userToSave.getUsername())){
-            throw new UniqueValueException("username","username already taken");
+        if (userRepository.existsByUsername(userToSave.getUsername())) {
+            throw new UniqueValueException("username", "username already taken");
         }
-        if(userRepository.existsByEmail(userToSave.getEmail())){
-            throw new UniqueValueException("email","email already taken");
+        if (userRepository.existsByEmail(userToSave.getEmail())) {
+            throw new UniqueValueException("email", "email already taken");
         }
 
         userRepository.save(userToSave);
+    }
+
+    @Override
+    public void editUser(User user, EditUserRequest editUserRequest) throws UniqueValueException, IncorrectPasswordException {
+        if (!passwordEncoder.matches(editUserRequest.getPassword(), user.getPassword())) {
+            throw new IncorrectPasswordException();
+        }
+        if (userRepository.existsByUsername(editUserRequest.getUsername())) {
+            if (userRepository.findByUsername(editUserRequest.getUsername()).getId() != user.getId())
+                throw new UniqueValueException("username", "username already taken");
+        }
+        if (userRepository.existsByEmail(editUserRequest.getEmail())) {
+            if (userRepository.findByEmail(editUserRequest.getEmail()).getId() != user.getId())
+                throw new UniqueValueException("email", "email already taken");
+        }
+
+        user.setUsername(editUserRequest.getUsername());
+        user.setPassword(passwordEncoder.encode(editUserRequest.getPassword()));
+        user.setEmail(editUserRequest.getEmail());
+
+        userRepository.save(user);
+
+
     }
 }
