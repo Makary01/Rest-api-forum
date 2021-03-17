@@ -1,5 +1,6 @@
 package pl.makary.entity;
 
+
 import lombok.Data;
 
 import javax.persistence.Entity;
@@ -10,11 +11,14 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Entity
-public class Role {
+public class VotesComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @NotNull
-    private String name;
+    private User user;
+
+    @NotNull
+    private Post post;
 }

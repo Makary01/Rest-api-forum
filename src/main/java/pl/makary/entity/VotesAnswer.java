@@ -10,11 +10,14 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Entity
-public class Role {
+public class VotesAnswer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @NotNull
-    private String name;
+    private User user;
+
+    @NotNull
+    private Answer answer;
 }
