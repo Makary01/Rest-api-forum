@@ -10,10 +10,10 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import pl.makary.entity.User;
 import pl.makary.exception.IncorrectPasswordException;
-import pl.makary.exception.UniqueValueException;
+import pl.makary.exception.ValidationException;
 import pl.makary.model.CreateUserRequest;
 import pl.makary.model.DeleteUserRequest;
-import pl.makary.model.EditUserRequest;
+import pl.makary.model.OkResponse;
 import pl.makary.service.UserService;
 import pl.makary.util.CurrentUser;
 
@@ -34,70 +34,70 @@ public class UserController {
 
     @PostMapping("")
     public ResponseEntity<?> createUser(@RequestBody @Valid CreateUserRequest createUserRequest, BindingResult result) {
-        if (result.hasErrors()) {
-            Map<String, String> errors= result.getFieldErrors().stream()
-                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-            return ResponseEntity
-                    .badRequest()
-                    .body(errors);
-        }
+
+        if (result.hasErrors()) return generateResponseFromBindingResult(result);
 
         try {
             userService.saveNewUser(createUserRequest);
-        } catch (UniqueValueException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getError());
+        } catch (ValidationException e) {
+            return e.generateErrorResponse();
         }
 
-        return ResponseEntity.ok("created new user");
+        return generateOkResponse("Created new user");
     }
 
-    @PutMapping("")
-    public ResponseEntity<?> editUser(@AuthenticationPrincipal CurrentUser currentUser,
-                                      @RequestBody @Valid EditUserRequest editUserRequest, BindingResult result){
-        if (result.hasErrors()) {
-            Map<String, String> errors= result.getFieldErrors().stream()
-                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-            return ResponseEntity
-                    .badRequest()
-                    .body(errors);
-        }
 
-        try {
-            User user = currentUser.getUser();
-            userService.editUser(user,editUserRequest);
-        } catch (UniqueValueException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getError());
-        } catch (IncorrectPasswordException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getError());
-        }
-        return ResponseEntity.ok("edited current user");
-    }
-
+    //    @PutMapping("")
+//    public ResponseEntity<?> editUser(@AuthenticationPrincipal CurrentUser currentUser,
+//                                      @RequestBody @Valid EditUserRequest editUserRequest, BindingResult result){
+//        if (result.hasErrors()) {
+//            Map<String, String> errors= result.getFieldErrors().stream()
+//                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(errors);
+//        }
+//
+//        try {
+//            User user = currentUser.getUser();
+//            userService.editUser(user,editUserRequest);
+//        } catch (UniqueValueException e) {
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(e.getError());
+//        } catch (IncorrectPasswordException e) {
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(e.getError());
+//        }
+//        return ResponseEntity.ok("edited current user");
+//    }
+//
     @DeleteMapping("")
     public ResponseEntity<?> deleteUser(@AuthenticationPrincipal CurrentUser currentUser,
-                                        @RequestBody @Valid DeleteUserRequest deleteUserRequest, BindingResult result){
-        if (result.hasErrors()) {
-            Map<String, String> errors= result.getFieldErrors().stream()
-                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-            return ResponseEntity
-                    .badRequest()
-                    .body(errors);
-        }
+                                        @RequestBody @Valid DeleteUserRequest deleteUserRequest, BindingResult result) {
+
+        if (result.hasErrors()) return generateResponseFromBindingResult(result);
 
         try {
             userService.delete(currentUser.getUser(), deleteUserRequest);
-        } catch (IncorrectPasswordException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getError());
+        } catch (ValidationException e) {
+            return e.generateErrorResponse();
         }
 
-        return ResponseEntity.ok("Deleted user");
+        return generateOkResponse("Deleted user");
+    }
+
+
+    private ResponseEntity<?> generateResponseFromBindingResult(BindingResult result) {
+        Map<String, String> errors = result.getFieldErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+        return ResponseEntity
+                .badRequest()
+                .body(errors);
+    }
+
+    private ResponseEntity<?> generateOkResponse(String message){
+        return ResponseEntity.ok(new OkResponse("Created new user"));
     }
 }
