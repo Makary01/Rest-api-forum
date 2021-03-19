@@ -1,6 +1,7 @@
 package pl.makary.entity;
 
 import lombok.Data;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -14,7 +15,8 @@ import java.util.Set;
 
 @Entity
 @Data
-@Where(clause = "enabled = 1")
+@Where(clause = "status = 1")
+@SQLDelete(sql = "UPDATE user SET status = 0 WHERE id = ?")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,5 +43,5 @@ public class User {
     private LocalDateTime created;
 
     @NotNull
-    private LocalDateTime last_online;
+    private LocalDateTime lastOnline;
 }

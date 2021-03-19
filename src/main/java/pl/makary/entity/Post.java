@@ -22,14 +22,16 @@ public class Post {
     private String Title;
 
     @NotNull
-    @Size(min = 30, max = 63206)
+    @Size(min = 30, max = 10000)
     private String content;
 
     @NotNull
     @CreatedBy
+    @ManyToOne
     private User author;
 
     @NotNull
+    @ManyToOne
     private Section section;
 
     @NotNull
@@ -44,6 +46,7 @@ public class Post {
     @NotNull
     private Integer popularity;
 
+    @OneToOne
     private Answer bestAnswer;
 
     @NotNull

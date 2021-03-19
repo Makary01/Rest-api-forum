@@ -1,10 +1,9 @@
 package pl.makary.service;
 
 import pl.makary.entity.User;
-import pl.makary.exception.IncorrectPasswordException;
 import pl.makary.exception.ValidationException;
-import pl.makary.model.CreateUserRequest;
-import pl.makary.model.DeleteUserRequest;
+import pl.makary.model.user.CreateUserRequest;
+import pl.makary.model.user.DeleteUserRequest;
 
 
 public interface UserService {

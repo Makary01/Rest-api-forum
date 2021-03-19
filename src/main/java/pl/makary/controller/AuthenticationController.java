@@ -7,6 +7,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.makary.model.AuthenticationRequest;
 import pl.makary.model.AuthenticationResponse;
@@ -14,6 +15,7 @@ import pl.makary.service.impl.UserDetailsServiceImpl;
 import pl.makary.util.JwtUtil;
 
 @RestController
+@RequestMapping("/api")
 public class AuthenticationController {
 
     private final AuthenticationManager authenticationManager;

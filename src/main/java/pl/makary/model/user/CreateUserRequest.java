@@ -1,4 +1,4 @@
-package pl.makary.model;
+package pl.makary.model.user;
 
 import lombok.Data;
 

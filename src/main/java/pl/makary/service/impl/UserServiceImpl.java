@@ -8,14 +8,16 @@ import pl.makary.exception.EmailTakenException;
 import pl.makary.exception.IncorrectPasswordException;
 import pl.makary.exception.UsernameTakenException;
 import pl.makary.exception.ValidationException;
-import pl.makary.model.CreateUserRequest;
-import pl.makary.model.DeleteUserRequest;
+import pl.makary.model.user.CreateUserRequest;
+import pl.makary.model.user.DeleteUserRequest;
 import pl.makary.repository.RoleRepository;
 import pl.makary.repository.UserRepository;
 import pl.makary.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -32,30 +34,33 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByUserName(String username) {
-        return userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
+        if (user != null) updateLastOnline(user);
+        return user;
     }
 
     @Override
     public void saveNewUser(CreateUserRequest createUserRequest) throws ValidationException {
         User userToSave = new User();
-        userToSave.setId(null);
-        userToSave.setUsername(createUserRequest.getUsername());
-        userToSave.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
-        userToSave.setEmail(createUserRequest.getEmail());
-        userToSave.setStatus(1);
-        Role userRole = roleRepository.findByName("ROLE_USER");
-        userToSave.setRoles(new HashSet<>(Arrays.asList(userRole)));
 
+        setDefaultUserFields(userToSave);
+
+        userToSave.setUsername(createUserRequest.getUsername());
         if (userRepository.existsByUsername(userToSave.getUsername())) {
             throw new UsernameTakenException();
         }
+
+        userToSave.setEmail(createUserRequest.getEmail());
         if (userRepository.existsByEmail(userToSave.getEmail())) {
             throw new EmailTakenException();
         }
 
+        userToSave.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
+
         userRepository.save(userToSave);
     }
-//
+
+    //
 //    @Override
 //    public void editUser(User user, EditUserRequest editUserRequest) throws UniqueValueException, IncorrectPasswordException {
 //        if (!passwordEncoder.matches(editUserRequest.getPassword(), user.getPassword())) {
@@ -81,12 +86,30 @@ public class UserServiceImpl implements UserService {
 //
     @Override
     public void delete(User user, DeleteUserRequest deleteUserRequest) throws ValidationException {
-        if(!passwordEncoder.matches(deleteUserRequest.getPassword(), user.getPassword())){
+        if (!passwordEncoder.matches(deleteUserRequest.getPassword(), user.getPassword())) {
             throw new IncorrectPasswordException();
+        } else {
+            userRepository.delete(user);
         }
-        user.setStatus(0);
-        userRepository.save(user);
     }
 
+
+
+
+
+    private void setDefaultUserFields(User user){
+        user.setId(null);
+        user.setStatus(1);
+        Role userRole = roleRepository.findByName("ROLE_USER");
+        user.setRoles(new HashSet<>(Arrays.asList(userRole)));
+        user.setCreated(LocalDateTime.now());
+        user.setLastOnline(LocalDateTime.now());
+    }
+
+    private void updateLastOnline(User user) {
+        user.setLastOnline(LocalDateTime.now());
+        userRepository.save(user);
+
+    }
 
 }

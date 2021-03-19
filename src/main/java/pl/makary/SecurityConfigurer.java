@@ -13,8 +13,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import pl.makary.filter.JwtRequestFilter;
 import pl.makary.service.impl.UserDetailsServiceImpl;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @EnableWebSecurity
+@EnableSwagger2
 public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -43,8 +45,9 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests().antMatchers("/authenticate").permitAll()
-                .antMatchers(HttpMethod.POST,"/user").permitAll()
-                .anyRequest().authenticated()
+//                .antMatchers("/api/**").authenticated()
+//                .antMatchers(HttpMethod.POST,"/api/user").permitAll()
+                .anyRequest().permitAll()
                 .and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
