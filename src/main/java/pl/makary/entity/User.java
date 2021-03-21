@@ -4,12 +4,13 @@ import lombok.Data;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
+import pl.makary.validators.annotation.PasswordConstraint;
+import pl.makary.validators.annotation.UsernameConstraint;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -21,11 +22,12 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false, unique = true, length = 60)
-    @Size(min = 4, max = 16)
+
+    @Column(nullable = false, unique = true)
+    @UsernameConstraint
     private String username;
 
-    @Size(min = 5, max = 60)
+    @PasswordConstraint
     private String password;
 
     @Email

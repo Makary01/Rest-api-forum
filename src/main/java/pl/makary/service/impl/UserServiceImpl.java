@@ -8,8 +8,7 @@ import pl.makary.exception.EmailTakenException;
 import pl.makary.exception.IncorrectPasswordException;
 import pl.makary.exception.UsernameTakenException;
 import pl.makary.exception.ValidationException;
-import pl.makary.model.user.CreateUserRequest;
-import pl.makary.model.user.DeleteUserRequest;
+import pl.makary.model.user.*;
 import pl.makary.repository.RoleRepository;
 import pl.makary.repository.UserRepository;
 import pl.makary.service.UserService;
@@ -17,7 +16,6 @@ import pl.makary.service.UserService;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -60,30 +58,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userToSave);
     }
 
-    //
-//    @Override
-//    public void editUser(User user, EditUserRequest editUserRequest) throws UniqueValueException, IncorrectPasswordException {
-//        if (!passwordEncoder.matches(editUserRequest.getPassword(), user.getPassword())) {
-//            throw new IncorrectPasswordException();
-//        }
-//        if (userRepository.existsByUsername(editUserRequest.getUsername())) {
-//            if (userRepository.findByUsername(editUserRequest.getUsername()).getId() != user.getId())
-//                throw new UniqueValueException("username", "username already taken");
-//        }
-//        if (userRepository.existsByEmail(editUserRequest.getEmail())) {
-//            if (userRepository.findByEmail(editUserRequest.getEmail()).getId() != user.getId())
-//                throw new UniqueValueException("email", "email already taken");
-//        }
-//
-//        user.setUsername(editUserRequest.getUsername());
-//        user.setPassword(passwordEncoder.encode(editUserRequest.getPassword()));
-//        user.setEmail(editUserRequest.getEmail());
-//
-//        userRepository.save(user);
-//
-//
-//    }
-//
     @Override
     public void delete(User user, DeleteUserRequest deleteUserRequest) throws ValidationException {
         if (!passwordEncoder.matches(deleteUserRequest.getPassword(), user.getPassword())) {
@@ -93,8 +67,35 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public void changeUsername(User user, ChangeUsernameRequest changeUsernameRequest) throws ValidationException {
+        if(!passwordEncoder.matches(changeUsernameRequest.getPassword(),user.getPassword())){
+            throw new IncorrectPasswordException();
+        } else {
+            user.setUsername(changeUsernameRequest.getUsername());
+            userRepository.save(user);
+        }
+    }
 
+    @Override
+    public void changeEmail(User user, ChangeEmailRequest changeEmailRequest) throws ValidationException {
+        if(!passwordEncoder.matches(changeEmailRequest.getPassword(),user.getPassword())){
+            throw new IncorrectPasswordException();
+        } else {
+            user.setEmail(changeEmailRequest.getEmail());
+            userRepository.save(user);
+        }
+    }
 
+    @Override
+    public void changePassword(User user, ChangePasswordRequest changePasswordRequest) throws ValidationException {
+        if(!passwordEncoder.matches(changePasswordRequest.getOldPassword(),user.getPassword())){
+            throw new IncorrectPasswordException();
+        } else {
+            user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+            userRepository.save(user);
+        }
+    }
 
 
     private void setDefaultUserFields(User user){

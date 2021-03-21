@@ -1,19 +1,21 @@
 package pl.makary.controller;
 
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import pl.makary.entity.User;
 import pl.makary.exception.ValidationException;
-import pl.makary.model.user.CreateUserRequest;
-import pl.makary.model.user.DeleteUserRequest;
+import pl.makary.model.user.*;
 import pl.makary.model.OkResponse;
 import pl.makary.service.UserService;
 import pl.makary.util.CurrentUser;
 
 import javax.validation.Valid;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,11 +36,10 @@ public class UserController {
 
         try {
             userService.saveNewUser(createUserRequest);
+            return generateOkResponse("Registered new user");
         } catch (ValidationException e) {
             return e.generateErrorResponse();
         }
-
-        return generateOkResponse("Registered new user");
     }
 
 
@@ -50,11 +51,60 @@ public class UserController {
 
         try {
             userService.delete(currentUser.getUser(), deleteUserRequest);
+            return generateOkResponse("Deleted user");
         } catch (ValidationException e) {
             return e.generateErrorResponse();
         }
+    }
 
-        return generateOkResponse("Deleted user");
+    @GetMapping("/{username:\\S{4,14}}")
+    public ResponseEntity<?> readUser(@PathVariable String username){
+        Optional<User> userOptional = Optional.ofNullable(userService.findByUserName(username));
+        return userOptional.isPresent() ? generateUserResponse(userOptional.get()) : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<?> readYourself(@AuthenticationPrincipal CurrentUser currentUser){
+        return generateUserResponse(currentUser.getUser());
+    }
+
+    @PutMapping("/change-username")
+    public ResponseEntity<?> changeUsername(@AuthenticationPrincipal CurrentUser currentUser,
+                                            @RequestBody @Valid ChangeUsernameRequest changeUsernameRequest, BindingResult result){
+        if (result.hasErrors()) return generateResponseFromBindingResult(result);
+
+        try {
+            userService.changeUsername(currentUser.getUser(), changeUsernameRequest);
+            return generateOkResponse("Changed username");
+        } catch (ValidationException e) {
+            return e.generateErrorResponse();
+        }
+    }
+
+    @PutMapping("/change-email")
+    public ResponseEntity<?> changeEmail(@AuthenticationPrincipal CurrentUser currentUser,
+                                         @RequestBody @Valid ChangeEmailRequest changeEmailRequest, BindingResult result){
+        if (result.hasErrors()) return generateResponseFromBindingResult(result);
+
+        try {
+            userService.changeEmail(currentUser.getUser(), changeEmailRequest);
+            return generateOkResponse("Changed email");
+        } catch (ValidationException e) {
+            return e.generateErrorResponse();
+        }
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal CurrentUser currentUser,
+                                            @RequestBody @Valid ChangePasswordRequest changePasswordRequest, BindingResult result){
+        if (result.hasErrors()) return generateResponseFromBindingResult(result);
+
+        try {
+            userService.changePassword(currentUser.getUser(), changePasswordRequest);
+            return generateOkResponse("Changed password");
+        } catch (ValidationException e) {
+            return e.generateErrorResponse();
+        }
     }
 
     private ResponseEntity<?> generateResponseFromBindingResult(BindingResult result) {
@@ -65,52 +115,18 @@ public class UserController {
                 .body(errors);
     }
 
-    private ResponseEntity<?> generateOkResponse(String message){
+    private ResponseEntity<OkResponse> generateOkResponse(String message){
         return ResponseEntity.ok(new OkResponse(message));
     }
 
-
-
-    //    @PutMapping("")
-//    public ResponseEntity<?> editUser(@AuthenticationPrincipal CurrentUser currentUser,
-//                                      @RequestBody @Valid EditUserRequest editUserRequest, BindingResult result){
-//        if (result.hasErrors()) {
-//            Map<String, String> errors= result.getFieldErrors().stream()
-//                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(errors);
-//        }
-//
-//        try {
-//            User user = currentUser.getUser();
-//            userService.editUser(user,editUserRequest);
-//        } catch (UniqueValueException e) {
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(e.getError());
-//        } catch (IncorrectPasswordException e) {
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(e.getError());
-//        }
-//        return ResponseEntity.ok("edited current user");
-//    }
-//
-//    @PutMapping("/change-password")
-//    public ResponseEntity<?> changePassword(@AuthenticationPrincipal CurrentUser currentUser,
-//                                        @RequestBody @Valid DeleteUserRequest deleteUserRequest, BindingResult result) {
-//
-//        if (result.hasErrors()) return generateResponseFromBindingResult(result);
-//
-//        try {
-//            userService.delete(currentUser.getUser(), deleteUserRequest);
-//        } catch (ValidationException e) {
-//            return e.generateErrorResponse();
-//        }
-//
-//        return generateOkResponse("Deleted user");
-//    }
+    private ResponseEntity<ReadUserResponse> generateUserResponse(User user){
+        ReadUserResponse userResponse = new ReadUserResponse();
+        userResponse.setUsername(user.getUsername());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setCreated(user.getCreated());
+        userResponse.setLastOnline(user.getLastOnline());
+        return ResponseEntity.ok(userResponse);
+    }
 
 
 
