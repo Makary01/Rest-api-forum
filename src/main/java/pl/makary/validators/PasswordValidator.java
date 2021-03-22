@@ -10,7 +10,7 @@ public class PasswordValidator implements
         ConstraintValidator<PasswordConstraint, String> {
 
     @Override
-    public void initialize(PasswordConstraint usernameConstraint) {
+    public void initialize(PasswordConstraint passwordConstraint) {
     }
 
     @Override

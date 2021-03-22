@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 public class VotesAnswer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @NotNull
     @ManyToOne

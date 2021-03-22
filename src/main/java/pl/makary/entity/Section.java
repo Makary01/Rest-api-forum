@@ -2,6 +2,7 @@ package pl.makary.entity;
 
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
+import pl.makary.validators.annotation.SectionNameConstraint;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,11 +17,10 @@ import java.time.LocalDateTime;
 public class Section {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
-    @NotNull
-    @Size(min=10, max = 155)
-    private String title;
+    @SectionNameConstraint
+    private String name;
 
     @NotNull
     @Size(max=1024)

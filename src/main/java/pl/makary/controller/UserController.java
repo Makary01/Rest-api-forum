@@ -107,6 +107,16 @@ public class UserController {
         }
     }
 
+
+    private ResponseEntity<ReadUserResponse> generateUserResponse(User user){
+        ReadUserResponse userResponse = new ReadUserResponse();
+        userResponse.setUsername(user.getUsername());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setCreated(user.getCreated());
+        userResponse.setLastOnline(user.getLastOnline());
+        return ResponseEntity.ok(userResponse);
+    }
+
     private ResponseEntity<?> generateResponseFromBindingResult(BindingResult result) {
         Map<String, String> errors = result.getFieldErrors().stream()
                 .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
@@ -118,16 +128,6 @@ public class UserController {
     private ResponseEntity<OkResponse> generateOkResponse(String message){
         return ResponseEntity.ok(new OkResponse(message));
     }
-
-    private ResponseEntity<ReadUserResponse> generateUserResponse(User user){
-        ReadUserResponse userResponse = new ReadUserResponse();
-        userResponse.setUsername(user.getUsername());
-        userResponse.setEmail(user.getEmail());
-        userResponse.setCreated(user.getCreated());
-        userResponse.setLastOnline(user.getLastOnline());
-        return ResponseEntity.ok(userResponse);
-    }
-
 
 
 }
