@@ -2,6 +2,7 @@ package pl.makary.entity;
 
 
 import lombok.Data;
+import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.springframework.data.annotation.CreatedBy;
@@ -39,11 +40,11 @@ public class Post {
 
     @NotNull
     @CreatedBy
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private User author;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Section section;
 
     @NotNull
@@ -57,9 +58,6 @@ public class Post {
 
     @NotNull
     private Integer popularity;
-
-    @OneToOne
-    private Answer bestAnswer;
 
     @NotNull
     private Integer status;

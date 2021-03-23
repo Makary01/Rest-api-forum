@@ -1,19 +1,26 @@
 package pl.makary.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import pl.makary.entity.Answer;
+import pl.makary.entity.Post;
 import pl.makary.exception.ValidationException;
 import pl.makary.model.OkResponse;
+import pl.makary.model.post.AnswerModel;
 import pl.makary.model.post.CreatePostRequest;
+import pl.makary.model.post.EditPostRequest;
+import pl.makary.model.post.PostResponse;
+import pl.makary.service.AnswerService;
 import pl.makary.service.PostService;
 import pl.makary.util.CurrentUser;
 
 import javax.validation.Valid;
 import java.util.Map;
-import java.util.function.BinaryOperator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -21,9 +28,11 @@ import java.util.stream.Collectors;
 public class PostController {
 
     private final PostService postService;
+    private final AnswerService answerService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, AnswerService answerService) {
         this.postService = postService;
+        this.answerService = answerService;
     }
 
     @PostMapping
@@ -42,24 +51,73 @@ public class PostController {
 
     @GetMapping("/{id:\\d+}")
     public ResponseEntity<?> readPost(@PathVariable Long id){
+        Optional<Post> postOptional = postService.findById(id);
+        return postOptional.isPresent() ? generatePostResponse(postOptional.get()) : ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/{id:\\d+}")
+    public ResponseEntity<?> editPost(@AuthenticationPrincipal CurrentUser currentUser,
+                                      @RequestBody @Valid EditPostRequest editPostRequest, BindingResult result,
+                                      @PathVariable Long id){
+        if(result.hasErrors()) return generateResponseFromBindingResult(result);
+
+        Optional<Post> post = postService.findById(id);
+        if(post.isPresent()){
+            if(post.get().getAuthor().getId() != currentUser.getUser().getId()){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }else {
+            return ResponseEntity.notFound().build();
+        }
+
+        try{
+            postService.edit(post.get(),editPostRequest);
+            return generateOkResponse("Edited post");
+        }catch (ValidationException e){
+            return e.generateErrorResponse();
+        }
+
+    }
+
+    @DeleteMapping("/{id:\\d+}")
+    public ResponseEntity<?> deletePost(@AuthenticationPrincipal CurrentUser currentUser, @PathVariable Long id){
+        Optional<Post> postOptional = postService.findById(id);
+        if(postOptional.isPresent()){
+            if(postOptional.get().getAuthor().getId() == currentUser.getUser().getId()){
+                postService.delete(postOptional.get());
+                return generateOkResponse("Deleted post");
+            }else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/{id:\\d+}/upvote")
+    public ResponseEntity<?> upvotePost(@PathVariable Long id, @AuthenticationPrincipal CurrentUser currentUser){
+        Optional<Post> postOptional = postService.findById(id);
+        if(!postOptional.isPresent()) return ResponseEntity.notFound().build();
+
+        try{
+            postService.upvote(postOptional.get(),currentUser.getUser());
+        }catch (ValidationException e){
+            return e.generateErrorResponse();
+        }
+
+
+
+    }
+
+    @PostMapping("/{id:\\d+}/downvote")
+    public ResponseEntity<?> downvotePost(@PathVariable Long id){
         return null;
     }
 
-    public ResponseEntity<?> editPost(){
-        return null;
-    }
 
-    public ResponseEntity<?> deletePost(){
-        return null;
-    }
 
-    public ResponseEntity<?> upvotePost(){
-        return null;
-    }
 
-    public ResponseEntity<?> downvotePost(){
-        return null;
-    }
+
 
     private ResponseEntity<?> generateResponseFromBindingResult(BindingResult result) {
         Map<String, String> errors = result.getFieldErrors().stream()
@@ -68,7 +126,24 @@ public class PostController {
                 .badRequest()
                 .body(errors);
     }
+
     private ResponseEntity<OkResponse> generateOkResponse(String message){
         return ResponseEntity.ok(new OkResponse(message));
+    }
+
+    private ResponseEntity<PostResponse> generatePostResponse(Post post){
+        PostResponse postResponse = new PostResponse();
+        postResponse.setTitle(post.getTitle());
+        postResponse.setContent(post.getContent());
+        postResponse.setRating(post.getRating());
+        postResponse.setCreated(post.getCreated());
+        postResponse.setEdited(post.getEdited());
+        postResponse.setAuthor(post.getAuthor().getUsername());
+        postResponse.setSection(post.getSection().getName());
+        return ResponseEntity.ok(postResponse);
+    }
+
+    private AnswerModel generateAnswerModel(Answer answer){
+        return null;
     }
 }

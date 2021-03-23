@@ -8,10 +8,13 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Entity
-public class VotesPost {
+public class VoteComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull
+    boolean isPositive;
 
     @NotNull
     @ManyToOne

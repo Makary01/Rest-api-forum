@@ -32,6 +32,8 @@ public class Answer {
     @NotNull
     private Integer rating;
 
+    private boolean isBest;
+
     @NotNull
     @CreatedDate
     private LocalDateTime created;
