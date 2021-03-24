@@ -9,4 +9,9 @@ public interface VotePostRepository extends JpaRepository<VotePost, Long> {
 
     boolean existsByUserAndPost(User user,Post post);
 
+    VotePost findByUserAndPost(User user, Post post);
+
+    Integer countAllByPost(Post post);
+
+//    Integer countAllByPostAndIsPositive(Post post, boolean isPositive);
 }

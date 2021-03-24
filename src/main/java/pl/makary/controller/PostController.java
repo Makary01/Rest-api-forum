@@ -1,5 +1,9 @@
 package pl.makary.controller;
 
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,12 +14,10 @@ import pl.makary.entity.Answer;
 import pl.makary.entity.Post;
 import pl.makary.exception.ValidationException;
 import pl.makary.model.OkResponse;
-import pl.makary.model.post.AnswerModel;
-import pl.makary.model.post.CreatePostRequest;
-import pl.makary.model.post.EditPostRequest;
-import pl.makary.model.post.PostResponse;
+import pl.makary.model.post.*;
 import pl.makary.service.AnswerService;
 import pl.makary.service.PostService;
+import pl.makary.service.SectionService;
 import pl.makary.util.CurrentUser;
 
 import javax.validation.Valid;
@@ -29,10 +31,12 @@ public class PostController {
 
     private final PostService postService;
     private final AnswerService answerService;
+    private final SectionService sectionService;
 
-    public PostController(PostService postService, AnswerService answerService) {
+    public PostController(PostService postService, AnswerService answerService, SectionService sectionService) {
         this.postService = postService;
         this.answerService = answerService;
+        this.sectionService = sectionService;
     }
 
     @PostMapping
@@ -101,23 +105,93 @@ public class PostController {
 
         try{
             postService.upvote(postOptional.get(),currentUser.getUser());
+            return generateOkResponse("Upvoted post");
         }catch (ValidationException e){
             return e.generateErrorResponse();
         }
-
-
-
     }
 
     @PostMapping("/{id:\\d+}/downvote")
-    public ResponseEntity<?> downvotePost(@PathVariable Long id){
-        return null;
+    public ResponseEntity<?> downvotePost(@PathVariable Long id, @AuthenticationPrincipal CurrentUser currentUser){
+        Optional<Post> postOptional = postService.findById(id);
+        if(!postOptional.isPresent()) return ResponseEntity.notFound().build();
+
+        try{
+            postService.downvote(postOptional.get(),currentUser.getUser());
+            return generateOkResponse("Downvoted post");
+        }catch (ValidationException e){
+            return e.generateErrorResponse();
+        }
     }
 
+    @GetMapping
+    public ResponseEntity<?> readPosts(@RequestParam(name = "sortBy",defaultValue = "popularity") String sortBy,
+                                       @RequestParam(name = "order",defaultValue = "desc") String order,
+                                       @RequestParam(name = "page", defaultValue = "1")String page,
+                                       @RequestParam(name = "section", defaultValue = "any")String section,
+                                       @RequestParam(name = "postsOnPage", defaultValue = "20")String postsOnPage){
+
+        if(!validateSortBy(sortBy)) sortBy="popularity";
+        if(!order.equals("asc")&&!order.equals("desc")) order = "desc";
+        if(!validateSectionName(section)) section = "any";
+
+        Integer pageNumber;
+        try{
+            pageNumber = Integer.parseInt(page);
+            if(pageNumber<=0) pageNumber = 1;
+        }catch (NumberFormatException e){
+            pageNumber = 1;
+        }
+        Integer postsOnPageNumber;
+
+        try{
+            postsOnPageNumber = Integer.parseInt(postsOnPage);
+            if(postsOnPageNumber>60||postsOnPageNumber<20) postsOnPageNumber = 20;
+        }catch (NumberFormatException e){
+            postsOnPageNumber = 20;
+        }
+
+        Pageable pageRequest = generatePageRequest(sortBy, order, pageNumber-1, postsOnPageNumber);
+        PageOfPostsResponse postsResponse;
 
 
+        if(section.equals("any")) {
+            postsResponse = postService.readPageOfPosts(pageRequest);
 
+        }else {
+            postsResponse = postService.readPageOfPostsBySection(pageRequest,sectionService.findByName(section));
+        }
+        return ResponseEntity.ok(postsResponse);
+    }
 
+    private Pageable generatePageRequest(String sortBy, String order, Integer pageNumber, Integer postsOnPage) {
+
+        Pageable pageRequest;
+        if(order.equals("desc")){
+            pageRequest = PageRequest.of(pageNumber,postsOnPage, Sort.by(sortBy).descending());
+        }else {
+            pageRequest = PageRequest.of(pageNumber,postsOnPage, Sort.by(sortBy).ascending());
+        }
+
+        return pageRequest;
+    }
+
+    boolean validateSectionName(String sectionName){
+        if(sectionName.equals("any")) return true;
+        return sectionService.existsByName(sectionName);
+    }
+
+    boolean validateSortBy(String sortBy){
+        switch (sortBy){
+            case "popularity":
+            case "title":
+            case "created":
+            case "rating":
+                return true;
+            default:
+                return false;
+        }
+    }
 
     private ResponseEntity<?> generateResponseFromBindingResult(BindingResult result) {
         Map<String, String> errors = result.getFieldErrors().stream()

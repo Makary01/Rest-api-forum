@@ -33,7 +33,7 @@ public class Post {
     private Long id;
 
     @TitleConstraint
-    private String Title;
+    private String title;
 
     @ContentConstraint
     private String content;

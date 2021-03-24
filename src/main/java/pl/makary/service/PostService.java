@@ -1,10 +1,13 @@
 package pl.makary.service;
 
+import org.springframework.data.domain.Pageable;
 import pl.makary.entity.Post;
+import pl.makary.entity.Section;
 import pl.makary.entity.User;
 import pl.makary.exception.ValidationException;
 import pl.makary.model.post.CreatePostRequest;
 import pl.makary.model.post.EditPostRequest;
+import pl.makary.model.post.PageOfPostsResponse;
 
 import java.util.Optional;
 
@@ -19,4 +22,10 @@ public interface PostService {
 
     void upvote(Post post, User user) throws ValidationException;
     void downvote(Post post, User user) throws ValidationException;
+
+    PageOfPostsResponse readPageOfPosts(Pageable pageRequest);
+
+    PageOfPostsResponse readPageOfPostsBySection(Pageable pageRequest, Section section);
+
+
 }
