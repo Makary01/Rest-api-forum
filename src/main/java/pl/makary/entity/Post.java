@@ -5,6 +5,7 @@ import lombok.Data;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import pl.makary.validators.annotation.ContentConstraint;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 @Data
 @Entity
+@SQLDelete(sql = "UPDATE post SET status = 0 WHERE id = ?")
 public class Post {
     @Id
     @GeneratedValue(generator = "UUID")

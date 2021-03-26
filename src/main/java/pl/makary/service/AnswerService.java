@@ -21,4 +21,8 @@ public interface AnswerService {
     Optional<Answer> findById(UUID id);
 
     void deleteAnswer(UUID id);
+
+    void upvoteAnswer(User user, Answer answer);
+
+    void downvoteAnswer(User user, Answer answer);
 }

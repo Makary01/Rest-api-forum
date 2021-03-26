@@ -83,7 +83,7 @@ public class AnswerController {
         if(result.hasErrors()) return generateResponseFromBindingResult(result);
 
         Optional<Answer> answerOptional = answerService.findById(id);
-        if(!answerOptional.isPresent()){
+        if(answerOptional.isPresent()){
             if(answerOptional.get().getAuthor().getId()!=currentUser.getUser().getId()){
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
@@ -98,7 +98,7 @@ public class AnswerController {
     public ResponseEntity<?> deleteAnswer(@PathVariable UUID id,
                                           @AuthenticationPrincipal CurrentUser currentUser){
         Optional<Answer> answerOptional = answerService.findById(id);
-        if(!answerOptional.isPresent()){
+        if(answerOptional.isPresent()){
             if(answerOptional.get().getAuthor().getId()!=currentUser.getUser().getId()){
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
@@ -108,6 +108,27 @@ public class AnswerController {
         answerService.deleteAnswer(id);
         return generateOkResponse("Edited answer");
     }
+
+    @PostMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}/upvote")
+    public ResponseEntity<?> upvoteAnswer(@AuthenticationPrincipal CurrentUser currentUser,
+                                          @PathVariable UUID id){
+        Optional<Answer> answerOptional = answerService.findById(id);
+        if(!answerOptional.isPresent()) return ResponseEntity.notFound().build();
+
+        answerService.upvoteAnswer(currentUser.getUser(),answerOptional.get());
+        return generateOkResponse("Upvoted post");
+    }
+
+    @PostMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}/downvote")
+    public ResponseEntity<?> downvoteAnswer(@AuthenticationPrincipal CurrentUser currentUser,
+                                            @PathVariable UUID id){
+        Optional<Answer> answerOptional = answerService.findById(id);
+        if(!answerOptional.isPresent()) return ResponseEntity.notFound().build();
+
+        answerService.downvoteAnswer(currentUser.getUser(),answerOptional.get());
+        return generateOkResponse("Downvoted post");
+    }
+
 
     private AnswerList generateAnswerListFromAnswerPage(Page<Answer> answerPage) {
         AnswerList answerList = new AnswerList();

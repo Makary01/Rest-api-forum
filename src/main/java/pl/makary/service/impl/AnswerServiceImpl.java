@@ -6,12 +6,14 @@ import org.springframework.stereotype.Service;
 import pl.makary.entity.Answer;
 import pl.makary.entity.Post;
 import pl.makary.entity.User;
+import pl.makary.entity.VoteAnswer;
 import pl.makary.exception.IncorrectPostIdException;
 import pl.makary.exception.ValidationException;
 import pl.makary.model.Answer.AddAnswerRequest;
 import pl.makary.model.Answer.EditAnswerRequest;
 import pl.makary.repository.AnswerRepository;
 import pl.makary.repository.PostRepository;
+import pl.makary.repository.VoteAnswerRepository;
 import pl.makary.service.AnswerService;
 
 import java.time.LocalDateTime;
@@ -23,10 +25,12 @@ public class AnswerServiceImpl implements AnswerService {
 
     private final AnswerRepository answerRepository;
     private final PostRepository postRepository;
+    private final VoteAnswerRepository voteAnswerRepository;
 
-    public AnswerServiceImpl(AnswerRepository answerRepository, PostRepository postRepository) {
+    public AnswerServiceImpl(AnswerRepository answerRepository, PostRepository postRepository, VoteAnswerRepository voteAnswerRepository) {
         this.answerRepository = answerRepository;
         this.postRepository = postRepository;
+        this.voteAnswerRepository = voteAnswerRepository;
     }
 
     @Override
@@ -65,6 +69,52 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public void deleteAnswer(UUID id) {
         answerRepository.delete(answerRepository.getOne(id));
+    }
+
+    @Override
+    public void upvoteAnswer(User user, Answer answer) {
+        Optional<VoteAnswer> vote = voteAnswerRepository.findByUserAndAnswer(user, answer);
+        if(vote.isPresent()){
+            if(vote.get().isPositive()){
+               return;
+            }else {
+                vote.get().setPositive(true);
+                voteAnswerRepository.save(vote.get());
+                answer.setRating(answer.getRating()+2);
+                answerRepository.save(answer);
+            }
+        }else {
+            VoteAnswer voteAnswer = new VoteAnswer();
+            voteAnswer.setAnswer(answer);
+            voteAnswer.setUser(user);
+            voteAnswer.setPositive(true);
+            voteAnswerRepository.save(voteAnswer);
+            answer.setRating(answer.getRating()+1);
+            answerRepository.save(answer);
+        }
+    }
+
+    @Override
+    public void downvoteAnswer(User user, Answer answer) {
+        Optional<VoteAnswer> vote = voteAnswerRepository.findByUserAndAnswer(user, answer);
+        if(vote.isPresent()){
+            if(vote.get().isPositive()){
+                vote.get().setPositive(false);
+                voteAnswerRepository.save(vote.get());
+                answer.setRating(answer.getRating()-2);
+                answerRepository.save(answer);
+            }else {
+                return;
+            }
+        }else {
+            VoteAnswer voteAnswer = new VoteAnswer();
+            voteAnswer.setAnswer(answer);
+            voteAnswer.setUser(user);
+            voteAnswer.setPositive(false);
+            voteAnswerRepository.save(voteAnswer);
+            answer.setRating(answer.getRating()-1);
+            answerRepository.save(answer);
+        }
     }
 
     private void setAnswerDefaultFields(Answer answer){
