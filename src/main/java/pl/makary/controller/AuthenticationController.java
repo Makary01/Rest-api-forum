@@ -16,7 +16,7 @@ import pl.makary.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api")
-public class AuthenticationController {
+public class AuthenticationController extends Controller {
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsServiceImpl userDetailsServiceImpl;
@@ -35,7 +35,7 @@ public class AuthenticationController {
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
             );
         }catch (AuthenticationException e){
-            throw new Exception("Incorrect username or password", e);
+            generateForbiddenResponse("Bad credentials");
         }
 
         final UserDetails userDetails = userDetailsServiceImpl

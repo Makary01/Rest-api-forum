@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/user")
-public class UserController {
+public class UserController extends Controller{
 
     private final UserService userService;
 
@@ -115,18 +115,6 @@ public class UserController {
         userResponse.setCreated(user.getCreated());
         userResponse.setLastOnline(user.getLastOnline());
         return ResponseEntity.ok(userResponse);
-    }
-
-    private ResponseEntity<?> generateResponseFromBindingResult(BindingResult result) {
-        Map<String, String> errors = result.getFieldErrors().stream()
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-        return ResponseEntity
-                .badRequest()
-                .body(errors);
-    }
-
-    private ResponseEntity<OkResponse> generateOkResponse(String message){
-        return ResponseEntity.ok(new OkResponse(message));
     }
 
 

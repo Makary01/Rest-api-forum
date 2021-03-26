@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/post")
-public class PostController {
+public class PostController extends Controller{
 
     private final PostService postService;
     private final AnswerService answerService;
@@ -192,18 +192,6 @@ public class PostController {
             default:
                 return false;
         }
-    }
-
-    private ResponseEntity<?> generateResponseFromBindingResult(BindingResult result) {
-        Map<String, String> errors = result.getFieldErrors().stream()
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-        return ResponseEntity
-                .badRequest()
-                .body(errors);
-    }
-
-    private ResponseEntity<OkResponse> generateOkResponse(String message){
-        return ResponseEntity.ok(new OkResponse(message));
     }
 
     private ResponseEntity<PostResponse> generatePostResponse(Post post){

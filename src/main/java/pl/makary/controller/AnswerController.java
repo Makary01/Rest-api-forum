@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/answer")
-public class AnswerController {
+public class AnswerController extends Controller{
 
     private final AnswerService answerService;
     private final CommentService commentService;
@@ -174,17 +174,5 @@ public class AnswerController {
         commentModel.setRating(comment.getRating());
         commentModel.setCreated(comment.getCreated());
         return commentModel;
-    }
-
-    private ResponseEntity<?> generateResponseFromBindingResult(BindingResult result) {
-        Map<String, String> errors = result.getFieldErrors().stream()
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-        return ResponseEntity
-                .badRequest()
-                .body(errors);
-    }
-
-    private ResponseEntity<OkResponse> generateOkResponse(String message){
-        return ResponseEntity.ok(new OkResponse(message));
     }
 }
