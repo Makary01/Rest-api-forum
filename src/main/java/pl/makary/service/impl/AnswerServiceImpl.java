@@ -5,12 +5,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.makary.entity.Answer;
 import pl.makary.entity.Post;
+import pl.makary.entity.User;
 import pl.makary.exception.IncorrectPostIdException;
 import pl.makary.exception.ValidationException;
+import pl.makary.model.Answer.AddAnswerRequest;
 import pl.makary.repository.AnswerRepository;
 import pl.makary.repository.PostRepository;
 import pl.makary.service.AnswerService;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +33,27 @@ public class AnswerServiceImpl implements AnswerService {
         Optional<Post> post = postRepository.findById(postId);
         if(!post.isPresent()) throw new IncorrectPostIdException();
         return answerRepository.findAllByPost(post.get(), pageable);
+    }
+
+    @Override
+    public void saveNewAnswer(User user, AddAnswerRequest addAnswerRequest) throws ValidationException {
+        Optional<Post> postOptional = postRepository.findById(addAnswerRequest.getPostId());
+        if(!postOptional.isPresent()) throw new IncorrectPostIdException();
+        Answer answer = new Answer();
+        answer.setAuthor(user);
+        answer.setContent(addAnswerRequest.getContent());
+        setAnswerDefaultFields(answer);
+        answer.setPost(postOptional.get());
+
+        answerRepository.save(answer);
+    }
+
+    private void setAnswerDefaultFields(Answer answer){
+        answer.setBest(false);
+        answer.setId(null);
+        answer.setRating(0);
+        answer.setCreated(LocalDateTime.now());
+        answer.setEdited(null);
     }
 
 }
