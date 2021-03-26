@@ -165,6 +165,46 @@ public class PostController extends Controller{
         return ResponseEntity.ok(postsResponse);
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<?> readUserPosts(@AuthenticationPrincipal CurrentUser currentUser,
+                                           @RequestParam(name = "page", defaultValue = "1")String page,
+                                           @RequestParam(name = "sortBy",defaultValue = "popularity") String sortBy,
+                                           @RequestParam(name = "order",defaultValue = "desc") String order,
+                                           @RequestParam(name = "section", defaultValue = "any")String section,
+                                           @RequestParam(name = "postsOnPage", defaultValue = "20")String postsOnPage){
+        if(!validateSortBy(sortBy)) sortBy="popularity";
+        if(!order.equals("asc")&&!order.equals("desc")) order = "desc";
+        if(!validateSectionName(section)) section = "any";
+
+        Integer pageNumber;
+        try{
+            pageNumber = Integer.parseInt(page);
+            if(pageNumber<=0) pageNumber = 1;
+        }catch (NumberFormatException e){
+            pageNumber = 1;
+        }
+        Integer postsOnPageNumber;
+
+        try{
+            postsOnPageNumber = Integer.parseInt(postsOnPage);
+            if(postsOnPageNumber>60||postsOnPageNumber<20) postsOnPageNumber = 20;
+        }catch (NumberFormatException e){
+            postsOnPageNumber = 20;
+        }
+
+        Pageable pageRequest = generatePageRequest(sortBy, order, pageNumber-1, postsOnPageNumber);
+        PageOfPostsResponse postsResponse;
+
+
+        if(section.equals("any")) {
+            postsResponse = postService.readPageOfPostsByUser(pageRequest,currentUser.getUser());
+        }else {
+            postsResponse = postService.readPageOfPostsByUserAndBySection(pageRequest,currentUser.getUser(),sectionService.findByName(section));
+        }
+        return ResponseEntity.ok(postsResponse);
+
+    }
+
     private Pageable generatePageRequest(String sortBy, String order, Integer pageNumber, Integer postsOnPage) {
 
         Pageable pageRequest;

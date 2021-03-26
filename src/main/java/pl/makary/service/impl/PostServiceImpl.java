@@ -138,6 +138,18 @@ public class PostServiceImpl implements PostService {
         return generatePageOfPostsResponse(postsPage);
     }
 
+    @Override
+    public PageOfPostsResponse readPageOfPostsByUser(Pageable pageRequest, User user) {
+        Page<Post> postsPage = postRepository.findAllByAuthor(user, pageRequest);
+        return generatePageOfPostsResponse(postsPage);
+    }
+
+    @Override
+    public PageOfPostsResponse readPageOfPostsByUserAndBySection(Pageable pageRequest, User user, Section section) {
+        Page<Post> postsPage = postRepository.findAllByAuthorAndSection(user,section, pageRequest);
+        return generatePageOfPostsResponse(postsPage);
+    }
+
     private PageOfPostsResponse generatePageOfPostsResponse(Page<Post> postsPage) {
         PageOfPostsResponse postsPageResponse = new PageOfPostsResponse();
         List<PostResponse> postResponseList = new ArrayList<>();

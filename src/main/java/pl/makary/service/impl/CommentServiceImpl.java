@@ -34,6 +34,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = new Comment();
         comment.setAnswer(answer);
         comment.setAuthor(user);
+        comment.setRating(0);
         comment.setContent(addCommentRequest.getContent());
         comment.setCreated(LocalDateTime.now());
         commentRepository.save(comment);

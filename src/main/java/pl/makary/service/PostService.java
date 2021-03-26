@@ -31,4 +31,7 @@ public interface PostService {
     PageOfPostsResponse readPageOfPostsBySection(Pageable pageRequest, Section section);
 
 
+    PageOfPostsResponse readPageOfPostsByUser(Pageable pageRequest, User user);
+
+    PageOfPostsResponse readPageOfPostsByUserAndBySection(Pageable pageRequest, User user, Section section);
 }

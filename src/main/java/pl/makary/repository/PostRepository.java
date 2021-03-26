@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import pl.makary.entity.Post;
 import pl.makary.entity.Role;
 import pl.makary.entity.Section;
+import pl.makary.entity.User;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -22,4 +23,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
 
 
     boolean existsByTitle(String title);
+
+    Page<Post> findAllByAuthor(User author, Pageable pageRequest);
+
+    Page<Post> findAllByAuthorAndSection(User author, Section section, Pageable pageRequest);
 }

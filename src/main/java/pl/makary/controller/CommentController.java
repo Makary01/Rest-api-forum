@@ -98,6 +98,7 @@ public class CommentController extends Controller{
         Integer pageNumber;
         try{
             pageNumber = Integer.parseInt(page);
+            if(pageNumber<=1) pageNumber = 2;
         }catch (NumberFormatException e){
             pageNumber = 2;
         }
