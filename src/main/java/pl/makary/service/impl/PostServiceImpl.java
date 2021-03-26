@@ -1,9 +1,7 @@
 package pl.makary.service.impl;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.makary.entity.*;
 import pl.makary.exception.IncorrectSectionNameException;
@@ -22,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -151,7 +148,7 @@ public class PostServiceImpl implements PostService {
         }
         postsPageResponse.setTotalPages(postsPage.getTotalPages());
         postsPageResponse.setNumberOfPage(postsPage.getNumber()+1);
-        postsPageResponse.setPostResponses(postResponseList);
+        postsPageResponse.setPosts(postResponseList);
         return postsPageResponse;
     }
 

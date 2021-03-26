@@ -34,7 +34,7 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public Page<Answer> findAllByPost(UUID postId, Pageable pageable) throws ValidationException {
+    public Page<Answer> readPageByPost(UUID postId, Pageable pageable) throws ValidationException {
         Optional<Post> post = postRepository.findById(postId);
         if(!post.isPresent()) throw new IncorrectPostIdException();
         return answerRepository.findAllByPost(post.get(), pageable);

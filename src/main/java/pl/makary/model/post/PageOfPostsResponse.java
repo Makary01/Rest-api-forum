@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class PageOfPostsResponse {
 
-    List<PostResponse> postResponses;
+    List<PostResponse> posts;
     int numberOfPage;
     int totalPages;
 }

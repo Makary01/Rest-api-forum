@@ -1,6 +1,8 @@
 package pl.makary.entity;
 
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -14,8 +16,18 @@ import java.util.UUID;
 @Entity
 public class Answer {
     @Id
-    @GeneratedValue
-    @Column(unique = true)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator",
+            parameters = {
+                    @Parameter(
+                            name = "uuid_gen_strategy_class",
+                            value = "org.hibernate.id.uuid.CustomVersionOneStrategy"
+                    )
+            }
+    )
+    @Column(unique = true,columnDefinition = "BINARY(16)")
     private UUID id;
 
     @NotNull

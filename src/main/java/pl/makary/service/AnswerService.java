@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface AnswerService {
-    Page<Answer> findAllByPost(UUID postId, Pageable pageable) throws ValidationException;
+    Page<Answer> readPageByPost(UUID postId, Pageable pageable) throws ValidationException;
 
     void saveNewAnswer(User user, AddAnswerRequest addAnswerRequest) throws ValidationException;
 
