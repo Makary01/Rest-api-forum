@@ -46,4 +46,18 @@ public class User {
 
     @NotNull
     private LocalDateTime lastOnline;
+
+    public User() {
+    }
+
+    public User(Long id, String username, String password, @Email String email, Set<Role> roles, @NotNull int status, LocalDateTime created, @NotNull LocalDateTime lastOnline) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.roles = roles;
+        this.status = status;
+        this.created = created;
+        this.lastOnline = lastOnline;
+    }
 }

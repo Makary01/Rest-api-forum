@@ -14,23 +14,25 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Entity
 public class Post {
     @Id
-    @GeneratedValue(generator = "sequence-generator")
+    @GeneratedValue(generator = "UUID")
     @GenericGenerator(
-            name = "sequence-generator",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator",
             parameters = {
-                    @Parameter(name = "sequence_name", value = "user_sequence"),
-                    @Parameter(name = "initial_value", value = "4"),
-                    @Parameter(name = "increment_size", value = "1")
+                    @Parameter(
+                            name = "uuid_gen_strategy_class",
+                            value = "org.hibernate.id.uuid.CustomVersionOneStrategy"
+                    )
             }
     )
-    @Column(unique = true)
-    private Long id;
+    @Column(unique = true,columnDefinition = "BINARY(16)")
+    private UUID id;
 
     @TitleConstraint
     private String title;

@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,8 +54,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Optional<Post> findById(Long id) {
+    public Optional<Post> findById(UUID id) {
         return postRepository.findById(id);
+    }
+
+    @Override
+    public Post findByTitle(String title) {
+        return postRepository.findByTitle(title);
     }
 
     @Override
@@ -151,6 +157,7 @@ public class PostServiceImpl implements PostService {
 
     private PostResponse generatePostResponse(Post post){
         PostResponse postResponse = new PostResponse();
+        postResponse.setId(post.getId());
         postResponse.setTitle(post.getTitle());
         postResponse.setContent(post.getContent());
         postResponse.setRating(post.getRating());

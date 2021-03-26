@@ -10,11 +10,14 @@ import pl.makary.model.post.EditPostRequest;
 import pl.makary.model.post.PageOfPostsResponse;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface PostService {
     void saveNewPost(User user, CreatePostRequest createPostRequest) throws ValidationException;
 
-    Optional<Post> findById(Long id);
+    Optional<Post> findById(UUID id);
+
+    Post findByTitle(String title);
 
     void delete(Post post);
 

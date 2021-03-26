@@ -9,11 +9,14 @@ import pl.makary.entity.Role;
 import pl.makary.entity.Section;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, UUID> {
 
-    Optional<Post> findById(Long id);
+    Optional<Post> findById(UUID id);
+
+    Post findByTitle(String title);
 
     Page<Post> findAllBySection(Section section, Pageable pageable);
 

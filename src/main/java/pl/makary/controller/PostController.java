@@ -23,6 +23,7 @@ import pl.makary.util.CurrentUser;
 import javax.validation.Valid;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -53,16 +54,21 @@ public class PostController {
         return generateOkResponse("Saved new post");
     }
 
-    @GetMapping("/{id:\\d+}")
-    public ResponseEntity<?> readPost(@PathVariable Long id){
+    @GetMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}")
+    public ResponseEntity<?> readPost(@PathVariable UUID id){
         Optional<Post> postOptional = postService.findById(id);
         return postOptional.isPresent() ? generatePostResponse(postOptional.get()) : ResponseEntity.notFound().build();
     }
+    @GetMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}/answers")
+    public ResponseEntity<?> readPostsAnswers(@PathVariable UUID id,@RequestParam(name = "page", defaultValue = "1")String page){
+        Optional<Post> postOptional = postService.findById(id);
+        return null;
+    }
 
-    @PutMapping("/{id:\\d+}")
+    @PutMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}")
     public ResponseEntity<?> editPost(@AuthenticationPrincipal CurrentUser currentUser,
                                       @RequestBody @Valid EditPostRequest editPostRequest, BindingResult result,
-                                      @PathVariable Long id){
+                                      @PathVariable UUID id){
         if(result.hasErrors()) return generateResponseFromBindingResult(result);
 
         Optional<Post> post = postService.findById(id);
@@ -83,8 +89,8 @@ public class PostController {
 
     }
 
-    @DeleteMapping("/{id:\\d+}")
-    public ResponseEntity<?> deletePost(@AuthenticationPrincipal CurrentUser currentUser, @PathVariable Long id){
+    @DeleteMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}")
+    public ResponseEntity<?> deletePost(@AuthenticationPrincipal CurrentUser currentUser, @PathVariable UUID id){
         Optional<Post> postOptional = postService.findById(id);
         if(postOptional.isPresent()){
             if(postOptional.get().getAuthor().getId() == currentUser.getUser().getId()){
@@ -98,8 +104,8 @@ public class PostController {
         }
     }
 
-    @PostMapping("/{id:\\d+}/upvote")
-    public ResponseEntity<?> upvotePost(@PathVariable Long id, @AuthenticationPrincipal CurrentUser currentUser){
+    @PostMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}/upvote")
+    public ResponseEntity<?> upvotePost(@PathVariable UUID id, @AuthenticationPrincipal CurrentUser currentUser){
         Optional<Post> postOptional = postService.findById(id);
         if(!postOptional.isPresent()) return ResponseEntity.notFound().build();
 
@@ -111,8 +117,8 @@ public class PostController {
         }
     }
 
-    @PostMapping("/{id:\\d+}/downvote")
-    public ResponseEntity<?> downvotePost(@PathVariable Long id, @AuthenticationPrincipal CurrentUser currentUser){
+    @PostMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}/downvote")
+    public ResponseEntity<?> downvotePost(@PathVariable UUID id, @AuthenticationPrincipal CurrentUser currentUser){
         Optional<Post> postOptional = postService.findById(id);
         if(!postOptional.isPresent()) return ResponseEntity.notFound().build();
 
@@ -157,7 +163,6 @@ public class PostController {
 
         if(section.equals("any")) {
             postsResponse = postService.readPageOfPosts(pageRequest);
-
         }else {
             postsResponse = postService.readPageOfPostsBySection(pageRequest,sectionService.findByName(section));
         }
@@ -207,6 +212,7 @@ public class PostController {
 
     private ResponseEntity<PostResponse> generatePostResponse(Post post){
         PostResponse postResponse = new PostResponse();
+        postResponse.setId(post.getId());
         postResponse.setTitle(post.getTitle());
         postResponse.setContent(post.getContent());
         postResponse.setRating(post.getRating());

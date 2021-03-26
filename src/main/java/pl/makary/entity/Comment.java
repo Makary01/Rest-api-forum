@@ -8,13 +8,15 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Entity
 public class Comment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @Column(unique = true)
+    private UUID id;
 
     @NotNull
     @CreatedBy

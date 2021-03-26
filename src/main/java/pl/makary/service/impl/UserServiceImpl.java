@@ -69,27 +69,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void changeUsername(User user, ChangeUsernameRequest changeUsernameRequest) throws ValidationException {
-        if(!passwordEncoder.matches(changeUsernameRequest.getPassword(),user.getPassword())){
+        if (!passwordEncoder.matches(changeUsernameRequest.getPassword(), user.getPassword())) {
             throw new IncorrectPasswordException();
-        } else {
-            user.setUsername(changeUsernameRequest.getUsername());
-            userRepository.save(user);
         }
+        if (userRepository.existsByUsername(changeUsernameRequest.getUsername())) {
+            throw new UsernameTakenException();
+        }
+        user.setUsername(changeUsernameRequest.getUsername());
+        userRepository.save(user);
     }
 
     @Override
     public void changeEmail(User user, ChangeEmailRequest changeEmailRequest) throws ValidationException {
-        if(!passwordEncoder.matches(changeEmailRequest.getPassword(),user.getPassword())){
+        if (!passwordEncoder.matches(changeEmailRequest.getPassword(), user.getPassword())) {
             throw new IncorrectPasswordException();
-        } else {
-            user.setEmail(changeEmailRequest.getEmail());
-            userRepository.save(user);
         }
+        if (userRepository.existsByEmail(changeEmailRequest.getEmail())) {
+            throw new EmailTakenException();
+        }
+        user.setEmail(changeEmailRequest.getEmail());
+        userRepository.save(user);
     }
 
     @Override
     public void changePassword(User user, ChangePasswordRequest changePasswordRequest) throws ValidationException {
-        if(!passwordEncoder.matches(changePasswordRequest.getOldPassword(),user.getPassword())){
+        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
             throw new IncorrectPasswordException();
         } else {
             user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
@@ -97,8 +101,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
-    private void setDefaultUserFields(User user){
+    private void setDefaultUserFields(User user) {
         user.setId(null);
         user.setStatus(1);
         Role userRole = roleRepository.findByName("ROLE_USER");
