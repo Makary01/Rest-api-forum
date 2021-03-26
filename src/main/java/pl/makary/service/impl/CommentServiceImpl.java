@@ -11,6 +11,8 @@ import pl.makary.repository.CommentRepository;
 import pl.makary.service.CommentService;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -34,5 +36,15 @@ public class CommentServiceImpl implements CommentService {
         comment.setContent(addCommentRequest.getContent());
         comment.setCreated(LocalDateTime.now());
         commentRepository.save(comment);
+    }
+
+    @Override
+    public Optional<Comment> findById(UUID commentId) {
+        return commentRepository.findById(commentId);
+    }
+
+    @Override
+    public void deleteComment(Comment comment) {
+        commentRepository.delete(comment);
     }
 }

@@ -7,8 +7,15 @@ import pl.makary.entity.Comment;
 import pl.makary.entity.User;
 import pl.makary.model.Comment.AddCommentRequest;
 
+import java.util.Optional;
+import java.util.UUID;
+
 public interface CommentService {
     Page<Comment> findAllByAnswer(Answer answer, Pageable pageRequest);
 
     void saveNewComment(User user, AddCommentRequest addCommentRequest, Answer answer);
+
+    Optional<Comment> findById(UUID commentId);
+
+    void deleteComment(Comment comment);
 }
