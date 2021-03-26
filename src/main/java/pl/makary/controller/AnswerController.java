@@ -3,15 +3,14 @@ package pl.makary.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import pl.makary.entity.Answer;
 import pl.makary.entity.Comment;
-import pl.makary.entity.Post;
 import pl.makary.exception.ValidationException;
 import pl.makary.model.Answer.AddAnswerRequest;
 import pl.makary.model.Answer.AnswerList;
@@ -19,7 +18,6 @@ import pl.makary.model.Answer.AnswerModel;
 import pl.makary.model.Answer.EditAnswerRequest;
 import pl.makary.model.Comment.CommentList;
 import pl.makary.model.Comment.CommentModel;
-import pl.makary.model.OkResponse;
 import pl.makary.service.AnswerService;
 import pl.makary.service.CommentService;
 import pl.makary.service.PostService;
@@ -27,7 +25,6 @@ import pl.makary.util.CurrentUser;
 
 import javax.validation.Valid;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/answer")
@@ -58,7 +55,9 @@ public class AnswerController extends Controller{
 
     @GetMapping("/{postId:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}")
     public ResponseEntity<?> readPostAnswers(@PathVariable UUID postId,
-                                             @RequestParam(name = "page", defaultValue = "1")String page){
+                                             @RequestParam(name = "page", defaultValue = "1")String page,
+                                             @RequestParam(name = "sortCommentsBy", defaultValue = "rating")String sortCommentsBy,
+                                             @RequestParam(name = "sortAnswersBy", defaultValue = "rating")String sortAnswersBy){
         Integer commentPageNumber;
         try{
             commentPageNumber = Integer.parseInt(page);
@@ -66,10 +65,16 @@ public class AnswerController extends Controller{
         }catch (NumberFormatException e){
             commentPageNumber = 1;
         }
-        Pageable pageRequest = PageRequest.of(commentPageNumber-1,20);
+        if(!sortCommentsBy.equals("rating")&&!sortCommentsBy.equals("created")){
+            sortCommentsBy ="rating";
+        }
+        if(!sortAnswersBy.equals("rating")&&!sortAnswersBy.equals("created")){
+            sortAnswersBy ="rating";
+        }
+        Pageable answersPageRequest = PageRequest.of(commentPageNumber-1,20, Sort.by(sortAnswersBy));
         try {
-            Page<Answer> answerPage = answerService.findAllByPost(postId,pageRequest);
-            return ResponseEntity.ok(generateAnswerListFromAnswerPage(answerPage));
+            Page<Answer> answerPage = answerService.findAllByPost(postId,answersPageRequest);
+            return ResponseEntity.ok(generateAnswerListFromAnswerPage(answerPage, sortCommentsBy));
         } catch (ValidationException e) {
             return e.generateErrorResponse();
         }
@@ -130,11 +135,11 @@ public class AnswerController extends Controller{
     }
 
 
-    private AnswerList generateAnswerListFromAnswerPage(Page<Answer> answerPage) {
+    private AnswerList generateAnswerListFromAnswerPage(Page<Answer> answerPage, String sortBy) {
         AnswerList answerList = new AnswerList();
         List<AnswerModel> answers = new ArrayList<>();
         for (Answer answer : answerPage.getContent()) {
-            answers.add(generateAnswerModel(answer));
+            answers.add(generateAnswerModel(answer,sortBy));
         }
         answerList.setAnswers(answers);
         answerList.setPageNumber(answerPage.getNumber()+1);
@@ -142,7 +147,7 @@ public class AnswerController extends Controller{
         return answerList;
     }
 
-    private AnswerModel generateAnswerModel(Answer answer){
+    private AnswerModel generateAnswerModel(Answer answer, String sortBy){
         AnswerModel answerModel = new AnswerModel();
         answerModel.setAuthor(answer.getAuthor().getUsername());
         answerModel.setContent(answer.getContent());
@@ -151,7 +156,7 @@ public class AnswerController extends Controller{
         answerModel.setRating(answer.getRating());
 
         CommentList commentList = new CommentList();
-        Pageable pageRequest = PageRequest.of(1,50);
+        Pageable pageRequest = PageRequest.of(1,50, Sort.by(sortBy));
         Page<Comment> commentPage = commentService.findAllByAnswer(answer, pageRequest);
         List<CommentModel> comments = new ArrayList<>();
         for (Comment comment : commentPage.getContent()) {
@@ -164,15 +169,5 @@ public class AnswerController extends Controller{
         answerModel.setComments(commentList);
 
         return answerModel;
-    }
-
-    private CommentModel generateCommentModelFromComment(Comment comment) {
-        CommentModel commentModel = new CommentModel();
-        commentModel.setId(comment.getId());
-        commentModel.setContent(comment.getContent());
-        commentModel.setAuthor(comment.getAuthor().getUsername());
-        commentModel.setRating(comment.getRating());
-        commentModel.setCreated(comment.getCreated());
-        return commentModel;
     }
 }

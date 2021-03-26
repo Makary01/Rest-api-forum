@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import pl.makary.entity.Comment;
+import pl.makary.model.Comment.CommentModel;
 import pl.makary.model.ForbiddenResponse;
 import pl.makary.model.NotFoundResponse;
 import pl.makary.model.OkResponse;
@@ -37,5 +39,15 @@ public abstract class Controller {
                 new ForbiddenResponse(message),
                 HttpStatus.FORBIDDEN
         );
+    }
+
+    public CommentModel generateCommentModelFromComment(Comment comment) {
+        CommentModel commentModel = new CommentModel();
+        commentModel.setId(comment.getId());
+        commentModel.setContent(comment.getContent());
+        commentModel.setAuthor(comment.getAuthor().getUsername());
+        commentModel.setRating(comment.getRating());
+        commentModel.setCreated(comment.getCreated());
+        return commentModel;
     }
 }

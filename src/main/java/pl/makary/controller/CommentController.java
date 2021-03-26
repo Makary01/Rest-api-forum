@@ -1,5 +1,10 @@
 package pl.makary.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
@@ -7,14 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import pl.makary.entity.Answer;
 import pl.makary.entity.Comment;
 import pl.makary.model.Comment.AddCommentRequest;
+import pl.makary.model.Comment.CommentList;
+import pl.makary.model.Comment.CommentModel;
 import pl.makary.service.AnswerService;
 import pl.makary.service.CommentService;
 import pl.makary.util.CurrentUser;
 
 import javax.validation.Valid;
-import java.util.Currency;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/comment")
@@ -84,5 +89,40 @@ public class CommentController extends Controller{
         }else {
             return generateNotFoundResponse("Comment not found");
         }
+    }
+
+    @GetMapping("/{answerId:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}")
+    public ResponseEntity<?> readMoreComments(@PathVariable UUID answerId,
+                                              @RequestParam(name = "page", defaultValue = "2") String page,
+                                              @RequestParam(name = "sortBy", defaultValue = "rating") String sortBy){
+        Integer pageNumber;
+        try{
+            pageNumber = Integer.parseInt(page);
+        }catch (NumberFormatException e){
+            pageNumber = 2;
+        }
+
+        if(!sortBy.equals("rating")&&!sortBy.equals("created")){
+            sortBy="rating";
+        }
+
+        Optional<Answer> answerOptional = answerService.findById(answerId);
+        if(answerOptional.isPresent()){
+            Pageable pageRequest = PageRequest.of(pageNumber-1,50, Sort.by(sortBy));
+            Page<Comment> commentPage = commentService.findAllByAnswer(answerOptional.get(), pageRequest);
+
+            CommentList commentList = new CommentList();
+            List<CommentModel> comments = new ArrayList<>();
+            for (Comment comment : commentPage.getContent()) {
+                comments.add(generateCommentModelFromComment(comment));
+            }
+            commentList.setComments(comments);
+            commentList.setTotalPages(commentPage.getTotalPages());
+            commentList.setPageNumber(commentPage.getNumber()+1);
+            return ResponseEntity.ok(commentList);
+        }else {
+            return generateNotFoundResponse("Answer not found");
+        }
+
     }
 }
