@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.makary.entity.Answer;
 import pl.makary.entity.Post;
 import pl.makary.exception.ValidationException;
+import pl.makary.model.Answer.AnswerModel;
 import pl.makary.model.OkResponse;
 import pl.makary.model.post.*;
 import pl.makary.service.AnswerService;
@@ -58,11 +59,6 @@ public class PostController {
     public ResponseEntity<?> readPost(@PathVariable UUID id){
         Optional<Post> postOptional = postService.findById(id);
         return postOptional.isPresent() ? generatePostResponse(postOptional.get()) : ResponseEntity.notFound().build();
-    }
-    @GetMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}/answers")
-    public ResponseEntity<?> readPostsAnswers(@PathVariable UUID id,@RequestParam(name = "page", defaultValue = "1")String page){
-        Optional<Post> postOptional = postService.findById(id);
-        return null;
     }
 
     @PutMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}")
@@ -221,9 +217,5 @@ public class PostController {
         postResponse.setAuthor(post.getAuthor().getUsername());
         postResponse.setSection(post.getSection().getName());
         return ResponseEntity.ok(postResponse);
-    }
-
-    private AnswerModel generateAnswerModel(Answer answer){
-        return null;
     }
 }

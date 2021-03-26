@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import pl.makary.entity.Post;
 import pl.makary.entity.Section;
 import pl.makary.entity.User;
+import pl.makary.exception.IncorrectSectionNameException;
 import pl.makary.exception.ValidationException;
 import pl.makary.model.post.CreatePostRequest;
 import pl.makary.repository.PostRepository;
@@ -74,5 +75,17 @@ public class PostServiceImplTest {
         } catch (ValidationException e) {
             fail();
         }
+    }
+    @Test
+    @DisplayName("Should fail saving new post incorrect section name")
+    void shouldFailSavingNewPostIncorrectSectionName() {
+        CreatePostRequest createPostRequest = new CreatePostRequest();
+        createPostRequest.setTitle("Some title");
+        createPostRequest.setContent("Some content some content some content some content");
+        createPostRequest.setSectionName("Some section");
+        when(sectionRepository.findByName(createPostRequest.getSectionName()))
+                .thenReturn(null);
+        assertThrows(IncorrectSectionNameException.class,()-> postService.saveNewPost(validAuthor,createPostRequest));
+
     }
 }

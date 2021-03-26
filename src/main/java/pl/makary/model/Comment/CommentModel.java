@@ -1,4 +1,4 @@
-package pl.makary.model.post;
+package pl.makary.model.Comment;
 
 import lombok.Data;
 
@@ -6,11 +6,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class AnswerModel {
+public class CommentModel {
     private UUID id;
     private String content;
-    private Integer rating;
-    private AuthorModel author;
     private LocalDateTime created;
-    private LocalDateTime edited;
+    private Integer rating;
+    private String author;
 }
