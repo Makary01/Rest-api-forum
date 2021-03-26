@@ -22,5 +22,5 @@ public class VoteComment {
 
     @NotNull
     @ManyToOne
-    private Post post;
+    private Comment comment;
 }

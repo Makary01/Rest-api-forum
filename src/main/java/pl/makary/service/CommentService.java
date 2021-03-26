@@ -18,4 +18,7 @@ public interface CommentService {
     Optional<Comment> findById(UUID commentId);
 
     void deleteComment(Comment comment);
+
+    void upvoteComment(User user, Comment comment);
+    void downvoteComment(User user, Comment comment);
 }

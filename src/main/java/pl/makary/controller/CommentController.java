@@ -59,4 +59,30 @@ public class CommentController extends Controller{
             return generateNotFoundResponse("Comment not found");
         }
     }
+
+    @PostMapping("/{commentId:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}/upvote")
+    public ResponseEntity<?> upvoteComment(@AuthenticationPrincipal CurrentUser currentUser,
+                                           @PathVariable UUID commentId){
+        Optional<Comment> commentOptional = commentService.findById(commentId);
+
+        if (commentOptional.isPresent()) {
+            commentService.upvoteComment(currentUser.getUser(), commentOptional.get());
+            return generateOkResponse("Upvoted comment");
+        }else {
+            return generateNotFoundResponse("Comment not found");
+        }
+    }
+
+    @PostMapping("/{commentId:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}/downvote")
+    public ResponseEntity<?> downvoteComment(@AuthenticationPrincipal CurrentUser currentUser,
+                                           @PathVariable UUID commentId){
+        Optional<Comment> commentOptional = commentService.findById(commentId);
+
+        if (commentOptional.isPresent()) {
+            commentService.downvoteComment(currentUser.getUser(), commentOptional.get());
+            return generateOkResponse("Downvoted comment");
+        }else {
+            return generateNotFoundResponse("Comment not found");
+        }
+    }
 }
