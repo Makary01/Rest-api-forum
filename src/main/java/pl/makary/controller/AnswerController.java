@@ -3,6 +3,7 @@ package pl.makary.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
@@ -10,22 +11,22 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import pl.makary.entity.Answer;
 import pl.makary.entity.Comment;
+import pl.makary.entity.Post;
 import pl.makary.exception.ValidationException;
 import pl.makary.model.Answer.AddAnswerRequest;
 import pl.makary.model.Answer.AnswerList;
 import pl.makary.model.Answer.AnswerModel;
+import pl.makary.model.Answer.EditAnswerRequest;
 import pl.makary.model.Comment.CommentList;
 import pl.makary.model.Comment.CommentModel;
 import pl.makary.model.OkResponse;
 import pl.makary.service.AnswerService;
 import pl.makary.service.CommentService;
+import pl.makary.service.PostService;
 import pl.makary.util.CurrentUser;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,10 +35,12 @@ public class AnswerController {
 
     private final AnswerService answerService;
     private final CommentService commentService;
+    private final PostService postService;
 
-    public AnswerController(AnswerService answerService, CommentService commentService) {
+    public AnswerController(AnswerService answerService, CommentService commentService, PostService postService) {
         this.answerService = answerService;
         this.commentService = commentService;
+        this.postService = postService;
     }
 
     @PostMapping
@@ -70,6 +73,40 @@ public class AnswerController {
         } catch (ValidationException e) {
             return e.generateErrorResponse();
         }
+    }
+
+    @PutMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}")
+    public ResponseEntity<?> editAnswer(@PathVariable UUID id,
+                                        @AuthenticationPrincipal CurrentUser currentUser,
+                                        @Valid @RequestBody EditAnswerRequest editAnswerRequest,BindingResult result) {
+
+        if(result.hasErrors()) return generateResponseFromBindingResult(result);
+
+        Optional<Answer> answerOptional = answerService.findById(id);
+        if(!answerOptional.isPresent()){
+            if(answerOptional.get().getAuthor().getId()!=currentUser.getUser().getId()){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }else {
+            return ResponseEntity.notFound().build();
+        }
+        answerService.editAnswer(id, editAnswerRequest);
+        return generateOkResponse("Edited answer");
+    }
+
+    @DeleteMapping("/{id:\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b}")
+    public ResponseEntity<?> deleteAnswer(@PathVariable UUID id,
+                                          @AuthenticationPrincipal CurrentUser currentUser){
+        Optional<Answer> answerOptional = answerService.findById(id);
+        if(!answerOptional.isPresent()){
+            if(answerOptional.get().getAuthor().getId()!=currentUser.getUser().getId()){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }else {
+            return ResponseEntity.notFound().build();
+        }
+        answerService.deleteAnswer(id);
+        return generateOkResponse("Edited answer");
     }
 
     private AnswerList generateAnswerListFromAnswerPage(Page<Answer> answerPage) {

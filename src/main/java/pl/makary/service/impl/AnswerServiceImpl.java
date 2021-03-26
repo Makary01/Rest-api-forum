@@ -9,6 +9,7 @@ import pl.makary.entity.User;
 import pl.makary.exception.IncorrectPostIdException;
 import pl.makary.exception.ValidationException;
 import pl.makary.model.Answer.AddAnswerRequest;
+import pl.makary.model.Answer.EditAnswerRequest;
 import pl.makary.repository.AnswerRepository;
 import pl.makary.repository.PostRepository;
 import pl.makary.service.AnswerService;
@@ -46,6 +47,24 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setPost(postOptional.get());
 
         answerRepository.save(answer);
+    }
+
+    @Override
+    public void editAnswer(UUID answerId, EditAnswerRequest editAnswerRequest) {
+        Answer answer = answerRepository.getOne(answerId);
+        answer.setContent(editAnswerRequest.getContent());
+        answer.setEdited(LocalDateTime.now());
+        answerRepository.save(answer);
+    }
+
+    @Override
+    public Optional<Answer> findById(UUID id) {
+        return answerRepository.findById(id);
+    }
+
+    @Override
+    public void deleteAnswer(UUID id) {
+        answerRepository.delete(answerRepository.getOne(id));
     }
 
     private void setAnswerDefaultFields(Answer answer){
