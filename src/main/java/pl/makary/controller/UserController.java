@@ -60,7 +60,7 @@ public class UserController extends Controller{
     @GetMapping("/{username:\\S{4,14}}")
     public ResponseEntity<?> readUser(@PathVariable String username){
         Optional<User> userOptional = Optional.ofNullable(userService.findByUserName(username));
-        return userOptional.isPresent() ? generateUserResponse(userOptional.get()) : ResponseEntity.notFound().build();
+        return userOptional.isPresent() ? generateUserResponse(userOptional.get()) : generateNotFoundResponse("User not found");
     }
 
     @GetMapping

@@ -35,7 +35,7 @@ public class AuthenticationController extends Controller {
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
             );
         }catch (AuthenticationException e){
-            generateForbiddenResponse("Bad credentials");
+            return generateForbiddenResponse("Bad credentials");
         }
 
         final UserDetails userDetails = userDetailsServiceImpl

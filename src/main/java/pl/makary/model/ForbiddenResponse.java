@@ -1,9 +1,11 @@
 package pl.makary.model;
 
-public class ForbiddenResponse {
-    private String msg;
+public class ForbiddenResponse extends ErrorResponse {
+
 
     public ForbiddenResponse(String msg) {
-        this.msg = msg;
+        super(msg);
+        this.error = "Forbidden";
+        this.status = 403;
     }
 }

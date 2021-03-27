@@ -2,11 +2,18 @@ package pl.makary.model;
 
 import lombok.Data;
 
+import java.util.HashMap;
+import java.util.Map;
 
-public class NotFoundResponse {
+public class NotFoundResponse extends ErrorResponse{
+
     private String msg;
 
     public NotFoundResponse(String msg) {
-        this.msg = msg;
+        super(msg);
+        this.error = "Not found";
+        this.status = 404;
     }
+
+
 }

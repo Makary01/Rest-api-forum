@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import pl.makary.filter.JwtRequestFilter;
 import pl.makary.service.impl.UserDetailsServiceImpl;
@@ -47,10 +48,18 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST,"/api/user").permitAll()
                 .antMatchers(HttpMethod.POST,"/api/authenticate").permitAll()
-//                .antMatchers("/api/**").hasAnyRole("USER","ADMIN","MODERATOR")
+                .antMatchers("/api/**").hasAnyRole("USER","ADMIN","MODERATOR")
+                .antMatchers("/api/moderator/**").hasRole("MODERATOR")
+                .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().permitAll()
+                .and().exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
                 .and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint(){
+        return new CustomAuthenticationEntryPoint();
     }
 }

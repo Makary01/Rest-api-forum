@@ -1,5 +1,6 @@
 package pl.makary.controller;
 
+import com.sun.istack.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -23,20 +24,23 @@ public abstract class Controller {
                 .body(errors);
     }
 
-    public ResponseEntity<OkResponse> generateOkResponse(String message){
+    public ResponseEntity<?> generateOkResponse(String message){
         return ResponseEntity.ok(new OkResponse(message));
     }
 
-    public ResponseEntity<NotFoundResponse> generateNotFoundResponse(String message){
+    public ResponseEntity<?> generateNotFoundResponse(String message){
+
+        NotFoundResponse notFoundResponse = new NotFoundResponse(message);
         return new ResponseEntity<>(
-                new NotFoundResponse(message),
+                notFoundResponse.getBody(),
                 HttpStatus.NOT_FOUND
         );
     }
 
-    public ResponseEntity<ForbiddenResponse> generateForbiddenResponse(String message){
+    public ResponseEntity<?> generateForbiddenResponse(String message){
+        ForbiddenResponse forbiddenResponse = new ForbiddenResponse(message);
         return new ResponseEntity<>(
-                new ForbiddenResponse(message),
+                forbiddenResponse.getBody(),
                 HttpStatus.FORBIDDEN
         );
     }
