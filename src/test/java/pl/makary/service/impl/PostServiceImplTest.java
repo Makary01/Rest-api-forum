@@ -12,6 +12,7 @@ import pl.makary.entity.User;
 import pl.makary.exception.IncorrectSectionNameException;
 import pl.makary.exception.ValidationException;
 import pl.makary.model.post.CreatePostRequest;
+import pl.makary.repository.AnswerRepository;
 import pl.makary.repository.PostRepository;
 import pl.makary.repository.SectionRepository;
 import pl.makary.repository.VotePostRepository;
@@ -34,6 +35,9 @@ public class PostServiceImplTest {
     @Mock
     private VotePostRepository votePostRepository;
 
+    @Mock
+    private AnswerRepository answerRepository;
+
     private PostServiceImpl postService;
 
     private Post validPost;
@@ -42,7 +46,7 @@ public class PostServiceImplTest {
 
     @BeforeEach
     void init(){
-        postService = new PostServiceImpl(postRepository,sectionRepository,votePostRepository);
+        postService = new PostServiceImpl(postRepository,sectionRepository,votePostRepository, answerRepository);
         validPost = new Post();
         validPost.setTitle("testTitle");
         validPost.setContent("testContent testContent testContent testContent");

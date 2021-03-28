@@ -1,4 +1,4 @@
-package pl.makary.model.Answer;
+package pl.makary.model.answer;
 
 import lombok.Data;
 

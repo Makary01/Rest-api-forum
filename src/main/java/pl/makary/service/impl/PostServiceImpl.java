@@ -4,12 +4,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.makary.entity.*;
+import pl.makary.exception.IncorrectAnswerIdException;
+import pl.makary.exception.IncorrectPostIdException;
 import pl.makary.exception.IncorrectSectionNameException;
 import pl.makary.exception.ValidationException;
-import pl.makary.model.post.CreatePostRequest;
-import pl.makary.model.post.EditPostRequest;
-import pl.makary.model.post.PageOfPostsResponse;
-import pl.makary.model.post.PostResponse;
+import pl.makary.model.post.*;
+import pl.makary.repository.AnswerRepository;
 import pl.makary.repository.PostRepository;
 import pl.makary.repository.SectionRepository;
 import pl.makary.repository.VotePostRepository;
@@ -27,11 +27,13 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final SectionRepository sectionRepository;
     private final VotePostRepository votePostRepository;
+    private final AnswerRepository answerRepository;
 
-    public PostServiceImpl(PostRepository postRepository, SectionRepository sectionRepository, VotePostRepository votePostRepository) {
+    public PostServiceImpl(PostRepository postRepository, SectionRepository sectionRepository, VotePostRepository votePostRepository, AnswerRepository answerRepository) {
         this.postRepository = postRepository;
         this.sectionRepository = sectionRepository;
         this.votePostRepository = votePostRepository;
+        this.answerRepository = answerRepository;
     }
 
     @Override
@@ -148,6 +150,25 @@ public class PostServiceImpl implements PostService {
     public PageOfPostsResponse readPageOfPostsByUserAndBySection(Pageable pageRequest, User user, Section section) {
         Page<Post> postsPage = postRepository.findAllByAuthorAndSection(user,section, pageRequest);
         return generatePageOfPostsResponse(postsPage);
+    }
+
+    @Override
+    public void selectBestAnswer(User user, SelectBestAnsRequest selectBestAnsRequest) throws ValidationException {
+        Optional<Post> postOptional = postRepository.findById(UUID.fromString(selectBestAnsRequest.getPostId()));
+        Optional<Answer> answerOptional = answerRepository.findById(UUID.fromString(selectBestAnsRequest.getAnswerId()));
+
+        if(!postOptional.isPresent()) throw new IncorrectPostIdException();
+        if(postOptional.get().getAuthor().getId()!=user.getId()) throw new IncorrectPostIdException();
+        if(!answerOptional.isPresent()) throw new IncorrectAnswerIdException();
+        if(answerOptional.get().getPost().getId()!=postOptional.get().getId()) throw new IncorrectAnswerIdException();
+
+        Optional<Answer> bestAnswer = answerRepository.findByPostAndIsBest(postOptional.get(),true);
+        if(bestAnswer.isPresent()){
+            bestAnswer.get().setBest(false);
+            answerRepository.save(bestAnswer.get());
+        }
+        answerOptional.get().setBest(true);
+        answerRepository.save(answerOptional.get());
     }
 
     private PageOfPostsResponse generatePageOfPostsResponse(Page<Post> postsPage) {

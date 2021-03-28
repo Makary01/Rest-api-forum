@@ -1,7 +1,7 @@
-package pl.makary.model.Answer;
+package pl.makary.model.answer;
 
 import lombok.Data;
-import pl.makary.model.Comment.CommentList;
+import pl.makary.model.comment.CommentList;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,5 +14,6 @@ public class AnswerModel {
     private String author;
     private LocalDateTime created;
     private LocalDateTime edited;
+    private boolean isBest;
     private CommentList comments;
 }

@@ -1,14 +1,14 @@
-package pl.makary.model.Comment;
+package pl.makary.model.answer;
 
 import lombok.Data;
-import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Data
-public class AddCommentRequest {
+public class EditAnswerRequest {
+
     @NotNull
-    @Size(min = 8, max = 8000)
+    @Size(min=10, max = 10000)
     private String content;
 }

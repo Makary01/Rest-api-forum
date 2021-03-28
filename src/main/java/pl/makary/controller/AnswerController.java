@@ -11,15 +11,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import pl.makary.entity.Answer;
 import pl.makary.entity.Comment;
-import pl.makary.entity.Post;
-import pl.makary.exception.IncorrectPostIdException;
 import pl.makary.exception.ValidationException;
-import pl.makary.model.Answer.AddAnswerRequest;
-import pl.makary.model.Answer.AnswerList;
-import pl.makary.model.Answer.AnswerModel;
-import pl.makary.model.Answer.EditAnswerRequest;
-import pl.makary.model.Comment.CommentList;
-import pl.makary.model.Comment.CommentModel;
+import pl.makary.model.answer.AddAnswerRequest;
+import pl.makary.model.answer.AnswerList;
+import pl.makary.model.answer.AnswerModel;
+import pl.makary.model.answer.EditAnswerRequest;
+import pl.makary.model.comment.CommentList;
+import pl.makary.model.comment.CommentModel;
 import pl.makary.service.AnswerService;
 import pl.makary.service.CommentService;
 import pl.makary.service.PostService;
@@ -76,13 +74,10 @@ public class AnswerController extends Controller{
 
 
 
-        Pageable answersPageRequest = PageRequest.of(answerPageNumber-1,20, Sort.by(sortAnswersBy).descending());
+        Pageable answersPageRequest = PageRequest.of(answerPageNumber-1,20,Sort.by("isBest").descending().and(Sort.by(sortAnswersBy).descending()));
 
         try {
             Page<Answer> answerPage = answerService.readPageByPost(postId,answersPageRequest);
-            for (Answer answer : answerPage.getContent()) {
-                System.out.println(answer.getPost().getId());
-            }
             return ResponseEntity.ok(generateAnswerListFromAnswerPage(answerPage, sortCommentsBy));
         } catch (ValidationException e) {
             return e.generateErrorResponse();
@@ -163,6 +158,7 @@ public class AnswerController extends Controller{
         answerModel.setCreated(answer.getCreated());
         answerModel.setId(answer.getId());
         answerModel.setRating(answer.getRating());
+        answerModel.setBest(answer.isBest());
 
         CommentList commentList = new CommentList();
         Pageable pageRequest = PageRequest.of(0,50, Sort.by(sortBy).descending());

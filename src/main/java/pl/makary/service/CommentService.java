@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import pl.makary.entity.Answer;
 import pl.makary.entity.Comment;
 import pl.makary.entity.User;
-import pl.makary.model.Comment.AddCommentRequest;
+import pl.makary.model.comment.AddCommentRequest;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.makary.entity.*;
-import pl.makary.model.Comment.AddCommentRequest;
+import pl.makary.model.comment.AddCommentRequest;
 import pl.makary.repository.CommentRepository;
 import pl.makary.repository.VoteCommentRepository;
 import pl.makary.service.CommentService;

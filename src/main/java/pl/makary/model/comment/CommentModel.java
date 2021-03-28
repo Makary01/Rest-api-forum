@@ -1,4 +1,4 @@
-package pl.makary.model.Comment;
+package pl.makary.model.comment;
 
 import lombok.Data;
 

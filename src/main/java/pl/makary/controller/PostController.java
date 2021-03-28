@@ -8,13 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import pl.makary.entity.Answer;
 import pl.makary.entity.Post;
 import pl.makary.exception.ValidationException;
-import pl.makary.model.Answer.AnswerModel;
-import pl.makary.model.OkResponse;
 import pl.makary.model.post.*;
 import pl.makary.service.AnswerService;
 import pl.makary.service.PostService;
@@ -22,10 +18,8 @@ import pl.makary.service.SectionService;
 import pl.makary.util.CurrentUser;
 
 import javax.validation.Valid;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/post")
@@ -122,6 +116,19 @@ public class PostController extends Controller{
             postService.downvote(postOptional.get(),currentUser.getUser());
             return generateOkResponse("Downvoted post");
         }catch (ValidationException e){
+            return e.generateErrorResponse();
+        }
+    }
+
+    @PostMapping("/bestAnswer")
+    public ResponseEntity<?> selectBestAnswer(@AuthenticationPrincipal CurrentUser currentUser,
+                                              @Valid @RequestBody SelectBestAnsRequest selectBestAnsRequest,BindingResult result){
+        if(result.hasErrors()) return generateResponseFromBindingResult(result);
+
+        try {
+            postService.selectBestAnswer(currentUser.getUser(),selectBestAnsRequest);
+            return generateOkResponse("Selected best answer");
+        } catch (ValidationException e) {
             return e.generateErrorResponse();
         }
     }

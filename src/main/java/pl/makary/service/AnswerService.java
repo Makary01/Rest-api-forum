@@ -5,8 +5,8 @@ import org.springframework.data.domain.Pageable;
 import pl.makary.entity.Answer;
 import pl.makary.entity.User;
 import pl.makary.exception.ValidationException;
-import pl.makary.model.Answer.AddAnswerRequest;
-import pl.makary.model.Answer.EditAnswerRequest;
+import pl.makary.model.answer.AddAnswerRequest;
+import pl.makary.model.answer.EditAnswerRequest;
 
 import java.util.Optional;
 import java.util.UUID;
