@@ -1,5 +1,6 @@
 package pl.makary.entity;
 
+import io.swagger.annotations.ApiParam;
 import lombok.Data;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -21,30 +22,38 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ApiParam(hidden = true)
     private Long id;
 
     @Column(nullable = false, unique = true)
     @UsernameConstraint
+    @ApiParam(hidden = true)
     private String username;
 
     @PasswordConstraint
+    @ApiParam(hidden = true)
     private String password;
 
     @Email
+    @ApiParam(hidden = true)
     private String email;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @ApiParam(hidden = true)
     private Set<Role> roles;
 
     @NotNull
+    @ApiParam(hidden = true)
     private int status;
 
     @CreatedDate
+    @ApiParam(hidden = true)
     private LocalDateTime created;
 
     @NotNull
+    @ApiParam(hidden = true)
     private LocalDateTime lastOnline;
 
     public User() {

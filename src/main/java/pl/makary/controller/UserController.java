@@ -1,6 +1,8 @@
 package pl.makary.controller;
 
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
@@ -30,6 +32,7 @@ public class UserController extends Controller{
 
 
     @PostMapping
+    @ApiOperation(value = "Creates new user", response = OkResponse.class)
     public ResponseEntity<?> createUser(@RequestBody @Valid CreateUserRequest createUserRequest, BindingResult result) {
 
         if (result.hasErrors()) return generateResponseFromBindingResult(result);
@@ -64,6 +67,7 @@ public class UserController extends Controller{
     }
 
     @GetMapping
+    @ApiOperation(value = "Reads currently logged user", response = OkResponse.class)
     public ResponseEntity<?> readYourself(@AuthenticationPrincipal CurrentUser currentUser){
         return generateUserResponse(currentUser.getUser());
     }

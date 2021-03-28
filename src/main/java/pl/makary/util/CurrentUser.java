@@ -1,10 +1,12 @@
 package pl.makary.util;
 
+import io.swagger.annotations.ApiParam;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
 
+
+import org.springframework.security.core.userdetails.User;
 public class CurrentUser extends User {
     private final pl.makary.entity.User user;
     public CurrentUser(String username, String password,
